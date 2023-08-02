@@ -15,8 +15,7 @@ The following packages need to be installed directly via pip (or in a virtualenv
 Running
 -------
 
-	./expired_certificate_scanner.py hostlist.csv
-    ./expired_certificate_scanner.py ip_list.txt
+    ./expired_certificate_scanner.py -f ip_list.txt scan
 
 
 
@@ -26,7 +25,7 @@ The list of IP addreses are IP,port definitions.
 
 The IP address may be IPs, hostname, or network/CIDR combinations.
 
-The ports are optional.  If not specified only port 443 is scanned.
+The ports are optional.  If not specified, ports 443, 8443, and 9443 are scanned.
 
 
 Example:
