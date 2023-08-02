@@ -40,6 +40,7 @@ from sqlalchemy import Enum
 from sqlalchemy import UniqueConstraint
 from sqlalchemy import PickleType
 from sqlalchemy.exc import IntegrityError
+from sqlalchemy.sql.expression import false as sa_false
 
 
 DEFAULT_PORT_LIST = [
@@ -392,14 +393,6 @@ class expired_certificate_scanner(object):
             self.get_connections()
 
 
-        # Get entries from DB
-        initial_query = self.session.query(ScanEntry).filter(ScanEntry.state == ScanState.INITIAL)
-
-        for entry in initial_query:
-            #hostport_queue.put(entry.id)
-            pass
-
-
         # Run the sslyze scans against open ports
         self.sslyzeScan()
 
@@ -414,8 +407,8 @@ class expired_certificate_scanner(object):
 
         query = self.session.query(ScanEntry)\
             .filter(ScanEntry.expire <= warn_date)\
-            .filter(ScanEntry.selfsigned == False)\
-            .order_by(ScanEntry.expire)  # NOQA
+            .filter(ScanEntry.selfsigned == sa_false())\
+            .order_by(ScanEntry.expire)
 
         for entry in query:
             time_remaining = entry.expire - now
