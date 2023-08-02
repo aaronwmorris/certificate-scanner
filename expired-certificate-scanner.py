@@ -4,6 +4,7 @@
 
 
 import sys
+import io
 import logging
 import re
 import time
@@ -194,12 +195,12 @@ class expired_certificate_scanner(object):
                 network_configuration=network_configuration,
                 scan_commands=[
                     ScanCommand.CERTIFICATE_INFO,
-                    #ScanCommand.SSL_2_0_CIPHER_SUITES,
-                    #ScanCommand.SSL_3_0_CIPHER_SUITES,
-                    #ScanCommand.TLS_1_0_CIPHER_SUITES,
-                    #ScanCommand.TLS_1_1_CIPHER_SUITES,
-                    #ScanCommand.TLS_1_2_CIPHER_SUITES,
-                    #ScanCommand.TLS_1_3_CIPHER_SUITES,
+                    ScanCommand.SSL_2_0_CIPHER_SUITES,
+                    ScanCommand.SSL_3_0_CIPHER_SUITES,
+                    ScanCommand.TLS_1_0_CIPHER_SUITES,
+                    ScanCommand.TLS_1_1_CIPHER_SUITES,
+                    ScanCommand.TLS_1_2_CIPHER_SUITES,
+                    ScanCommand.TLS_1_3_CIPHER_SUITES,
                 ]
             )
 
@@ -397,12 +398,8 @@ class expired_certificate_scanner(object):
         self.sslyzeScan()
 
 
-    def report(self, days):
+    def cert_report(self, days):
         now = datetime.datetime.now()
-        now_str = now.strftime('%y%m%d_%H%M%S')
-        output_o = open('results_{0:s}_{1:s}.csv'.format(self.filename, now_str), 'w')
-        output_o.write('#host:port,cn,expire,days,issuer\n')
-
         warn_date = now + datetime.timedelta(days=days)
 
         query = self.session.query(ScanEntry)\
@@ -410,55 +407,149 @@ class expired_certificate_scanner(object):
             .filter(ScanEntry.selfsigned == sa_false())\
             .order_by(ScanEntry.expire)
 
-        for entry in query:
-            time_remaining = entry.expire - now
-            output_o.write('{0}:{1},{2},{3},{4},{5}\n'.format(
-                entry.host,
-                entry.port,
-                entry.cn,
-                entry.expire,
-                time_remaining.days,
-                entry.issuer,
-            ))
 
-
-        logger.warning('Report: %s', output_o.name)
-        output_o.flush()
-        output_o.close()
-
-
-    def fullreport(self, days):
-        now = datetime.datetime.now()
         now_str = now.strftime('%y%m%d_%H%M%S')
-        output_o = open('results_{0:s}_{1:s}.csv'.format(self.filename, now_str), 'w')
-        output_o.write('#host:port,cn,fingerprint,selfsigned,expire,days,issuer\n')
+        with io.open('results_cert_{0:s}_{1:s}.csv'.format(self.filename, now_str), 'w') as output_o:
+            output_o.write('#host:port,cn,expire,days,issuer\n')
+
+            for entry in query:
+                time_remaining = entry.expire - now
+                output_o.write('{0}:{1},{2},{3},{4},{5}\n'.format(
+                    entry.host,
+                    entry.port,
+                    entry.cn,
+                    entry.expire,
+                    time_remaining.days,
+                    entry.issuer,
+                ))
+
+
+            logger.warning('Report: %s', output_o.name)
+
+
+    def cert_fullreport(self, days):
+        now = datetime.datetime.now()
 
         query = self.session.query(ScanEntry)\
             .filter(ScanEntry.state == ScanState.COMPLETE)\
             .order_by(ScanEntry.expire)
 
-        for entry in query:
-            time_remaining = entry.expire - now
-            if entry.selfsigned:
-                selfsigned = 'True'
-            else:
-                selfsigned = ''
 
-            output_o.write('{0}:{1},{2},{3},{4},{5},{6},{7}\n'.format(
-                entry.host,
-                entry.port,
-                entry.cn,
-                entry.fingerprint,
-                selfsigned,
-                entry.expire,
-                time_remaining.days,
-                entry.issuer,
-            ))
+        now_str = now.strftime('%y%m%d_%H%M%S')
+        with io.open('results_cert_{0:s}_{1:s}.csv'.format(self.filename, now_str), 'w') as output_o:
+            output_o.write('#host:port,cn,fingerprint,selfsigned,expire,days,issuer\n')
 
 
-        logger.warning('Report: %s', output_o.name)
-        output_o.flush()
-        output_o.close()
+            for entry in query:
+                time_remaining = entry.expire - now
+                if entry.selfsigned:
+                    selfsigned = 'True'
+                else:
+                    selfsigned = ''
+
+                output_o.write('{0}:{1},{2},{3},{4},{5},{6},{7}\n'.format(
+                    entry.host,
+                    entry.port,
+                    entry.cn,
+                    entry.fingerprint,
+                    selfsigned,
+                    entry.expire,
+                    time_remaining.days,
+                    entry.issuer,
+                ))
+
+
+            logger.warning('Report: %s', output_o.name)
+
+
+    def ssl_report(self, days):
+        now = datetime.datetime.now()
+
+        query = self.session.query(ScanEntry)\
+            .filter(ScanEntry.state == ScanState.COMPLETE)
+
+
+        now_str = now.strftime('%y%m%d_%H%M%S')
+        with io.open('results_ssl_{0:s}_{1:s}.csv'.format(self.filename, now_str), 'w') as output_o:
+            output_o.write('#host:port,cn,tlsv1_3,tlsv1_2,tlsv1_1,tlsv1_0,sslv3_0,sslv2_0\n')
+
+
+            for entry in query:
+                if not entry.tlsv1_3:
+                    tlsv1_3 = 'no data'
+                elif entry.tlsv1_3 == 'no_scan':
+                    tlsv1_3 = 'no_scan'
+                elif entry.tlsv1_3 == 'disabled':
+                    tlsv1_3 = 'disabled'
+                else:
+                    tlsv1_3 = 'enabled'
+
+
+                if not entry.tlsv1_2:
+                    tlsv1_2 = 'no data'
+                elif entry.tlsv1_2 == 'no_scan':
+                    tlsv1_2 = 'no_scan'
+                elif entry.tlsv1_2 == 'disabled':
+                    tlsv1_2 = 'disabled'
+                else:
+                    tlsv1_2 = 'enabled'
+
+
+                if not entry.tlsv1_1:
+                    tlsv1_1 = 'no data'
+                elif entry.tlsv1_1 == 'no_scan':
+                    tlsv1_1 = 'no_scan'
+                elif entry.tlsv1_1 == 'disabled':
+                    tlsv1_1 = 'disabled'
+                else:
+                    tlsv1_1 = 'enabled'
+
+
+                if not entry.tlsv1_0:
+                    tlsv1_0 = 'no data'
+                elif entry.tlsv1_0 == 'no_scan':
+                    tlsv1_0 = 'no_scan'
+                elif entry.tlsv1_0 == 'disabled':
+                    tlsv1_0 = 'disabled'
+                else:
+                    tlsv1_0 = 'enabled'
+
+
+                if not entry.sslv3_0:
+                    sslv3_0 = 'no data'
+                elif entry.sslv3_0 == 'no_scan':
+                    sslv3_0 = 'no_scan'
+                elif entry.sslv3_0 == 'disabled':
+                    sslv3_0 = 'disabled'
+                else:
+                    sslv3_0 = 'enabled'
+
+
+                if not entry.sslv2_0:
+                    sslv2_0 = 'no data'
+                elif entry.sslv2_0 == 'no_scan':
+                    sslv2_0 = 'no_scan'
+                elif entry.sslv2_0 == 'disabled':
+                    sslv2_0 = 'disabled'
+                else:
+                    sslv2_0 = 'enabled'
+
+
+                output_o.write('{0}:{1},{2},{3},{4},{5},{6},{7},{8}\n'.format(
+                    entry.host,
+                    entry.port,
+                    entry.cn,
+                    tlsv1_3,
+                    tlsv1_2,
+                    tlsv1_1,
+                    tlsv1_0,
+                    sslv3_0,
+                    sslv2_0,
+                ))
+
+
+            logger.warning('Report: %s', output_o.name)
+
 
 
 class ScanState(enum.Enum):
@@ -499,7 +590,12 @@ if __name__ == '__main__':
     parser.add_argument(
         "action",
         help="action",
-        choices=['scan', 'report', 'fullreport'],
+        choices=[
+            'scan',
+            'cert_report',
+            'cert_fullreport',
+            'ssl_report',
+        ],
     )
     parser.add_argument(
         "--file",
