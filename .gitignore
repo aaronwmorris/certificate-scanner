@@ -1,0 +1,12 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+
+
+# reports
+results*.csv
+
+
+# SQLite dbs
+*.sqlite
+*.sq3
