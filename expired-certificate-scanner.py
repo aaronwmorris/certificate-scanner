@@ -46,13 +46,8 @@ from sqlalchemy.sql.expression import false as sa_false
 
 DEFAULT_PORT_LIST = [
     '443',
-    '636',
     '8443',
-    '8444',
     '9443',
-    '9444',
-    '9043',
-    '9044',
 ]
 WARN_DAYS = 90
 
