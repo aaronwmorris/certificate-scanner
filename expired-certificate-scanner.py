@@ -471,63 +471,63 @@ class expired_certificate_scanner(object):
 
             for entry in query:
                 if not entry.tlsv1_3:
-                    tlsv1_3 = 'no data'
+                    tlsv1_3 = 'no_data'
                 elif entry.tlsv1_3 == 'no_scan':
                     tlsv1_3 = 'no_scan'
                 elif entry.tlsv1_3 == 'disabled':
                     tlsv1_3 = 'disabled'
                 else:
-                    tlsv1_3 = 'enabled'
+                    tlsv1_3 = 'x'
 
 
                 if not entry.tlsv1_2:
-                    tlsv1_2 = 'no data'
+                    tlsv1_2 = 'no_data'
                 elif entry.tlsv1_2 == 'no_scan':
                     tlsv1_2 = 'no_scan'
                 elif entry.tlsv1_2 == 'disabled':
-                    tlsv1_2 = 'disabled'
+                    tlsv1_2 = ''
                 else:
-                    tlsv1_2 = 'enabled'
+                    tlsv1_2 = 'x'
 
 
                 if not entry.tlsv1_1:
-                    tlsv1_1 = 'no data'
+                    tlsv1_1 = 'no_data'
                 elif entry.tlsv1_1 == 'no_scan':
                     tlsv1_1 = 'no_scan'
                 elif entry.tlsv1_1 == 'disabled':
-                    tlsv1_1 = 'disabled'
+                    tlsv1_1 = ''
                 else:
-                    tlsv1_1 = 'enabled'
+                    tlsv1_1 = 'x'
 
 
                 if not entry.tlsv1_0:
-                    tlsv1_0 = 'no data'
+                    tlsv1_0 = 'no_data'
                 elif entry.tlsv1_0 == 'no_scan':
                     tlsv1_0 = 'no_scan'
                 elif entry.tlsv1_0 == 'disabled':
-                    tlsv1_0 = 'disabled'
+                    tlsv1_0 = ''
                 else:
-                    tlsv1_0 = 'enabled'
+                    tlsv1_0 = 'x'
 
 
                 if not entry.sslv3_0:
-                    sslv3_0 = 'no data'
+                    sslv3_0 = 'no_data'
                 elif entry.sslv3_0 == 'no_scan':
                     sslv3_0 = 'no_scan'
                 elif entry.sslv3_0 == 'disabled':
-                    sslv3_0 = 'disabled'
+                    sslv3_0 = ''
                 else:
-                    sslv3_0 = 'enabled'
+                    sslv3_0 = 'x'
 
 
                 if not entry.sslv2_0:
-                    sslv2_0 = 'no data'
+                    sslv2_0 = 'no_data'
                 elif entry.sslv2_0 == 'no_scan':
                     sslv2_0 = 'no_scan'
                 elif entry.sslv2_0 == 'disabled':
-                    sslv2_0 = 'disabled'
+                    sslv2_0 = ''
                 else:
-                    sslv2_0 = 'enabled'
+                    sslv2_0 = 'x'
 
 
                 output_o.write('{0}:{1},{2},{3},{4},{5},{6},{7},{8}\n'.format(
