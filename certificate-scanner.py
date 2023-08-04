@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# Tool to scan servers/networks for [soon to be] expired certificates
+# Tool to scan servers/networks for [soon to be] expired certificates and TLS/SSL configuration
 # Author:  Aaron W Morris <aaron@aarmor.net>
 
 
@@ -74,7 +74,7 @@ def set_sqlite_pragma(dbapi_connection, connection_record):
 
 
 
-class expired_certificate_scanner(object):
+class certificate_scanner(object):
 
     def __init__(self, filename):
 
@@ -618,11 +618,11 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
-    ecs = expired_certificate_scanner(
+    cs = certificate_scanner(
         args.file,
     )
 
-    action_function = getattr(ecs, args.action)
+    action_function = getattr(cs, args.action)
     action_function(
         days=args.days
     )
