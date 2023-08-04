@@ -1,5 +1,5 @@
-# expired-certificate-scanner
-Tool to scan servers/networks for [soon to be] expired certificates
+# certificate-scanner
+Tool to scan servers/networks for [soon to be] expired certificates and TLS/SSL config
 
 
 Getting started
@@ -13,7 +13,7 @@ The following packages need to be installed directly via pip (or in a virtualenv
 Running
 -------
 
-    ./expired_certificate_scanner.py -f ip_list.txt scan
+    ./certificate_scanner.py -f ip_list.txt scan
 
 
 
@@ -36,11 +36,11 @@ Example:
 Generating reports
 -------
 
-    ./expired_certificate_scanner.py -f ip_list.txt cert_report
+    ./certificate_scanner.py -f ip_list.txt cert_report
     
-    ./expired_certificate_scanner.py -f ip_list.txt cert_fullreport
+    ./certificate_scanner.py -f ip_list.txt cert_fullreport
     
-    ./expired_certificate_scanner.py -f ip_list.txt ssl_report
+    ./certificate_scanner.py -f ip_list.txt ssl_report
 
 
 Restarting
