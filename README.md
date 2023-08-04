@@ -7,9 +7,7 @@ Getting started
 
 The following packages need to be installed directly via pip (or in a virtualenv):
 
-    pip install --upgrade setuptools
-    pip install --upgrade sslyze
-    pip install --upgrade sqlalchemy
+    pip install -r requirements.txt
 
 
 Running
