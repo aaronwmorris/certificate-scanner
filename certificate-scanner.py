@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # Tool to scan servers/networks for [soon to be] expired certificates and TLS/SSL configuration
 # Author:  Aaron W Morris <aaron@aarmor.net>
 

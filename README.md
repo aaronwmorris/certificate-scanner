@@ -33,6 +33,16 @@ Example:
     yahoo.com
 
 
+Generating reports
+-------
+
+    ./expired_certificate_scanner.py -f ip_list.txt cert_report
+    
+    ./expired_certificate_scanner.py -f ip_list.txt cert_fullreport
+    
+    ./expired_certificate_scanner.py -f ip_list.txt ssl_report
+
+
 Restarting
 ----------
 The state of the scanner and entries is stored in SQLite database, therefore it is safe to stop and restart the scanner.  The scan will pick up where it left off.
