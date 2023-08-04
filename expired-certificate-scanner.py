@@ -5,6 +5,7 @@
 
 import sys
 import io
+import csv
 import logging
 import re
 import time
@@ -405,18 +406,21 @@ class expired_certificate_scanner(object):
 
         now_str = now.strftime('%y%m%d_%H%M%S')
         with io.open('results_cert_{0:s}_{1:s}.csv'.format(self.filename, now_str), 'w') as output_o:
-            output_o.write('#host:port,cn,expire,days,issuer\n')
+            csvwriter = csv.writer(output_o)
+
+            csvwriter.writerow(['#host:port', 'cn', 'expire', 'days', 'issuer'])
 
             for entry in query:
                 time_remaining = entry.expire - now
-                output_o.write('{0}:{1},{2},{3},{4},{5}\n'.format(
+
+                csvwriter.writerow([
                     entry.host,
                     entry.port,
                     entry.cn,
                     entry.expire,
                     time_remaining.days,
                     entry.issuer,
-                ))
+                ])
 
 
             logger.warning('Report: %s', output_o.name)
@@ -432,7 +436,9 @@ class expired_certificate_scanner(object):
 
         now_str = now.strftime('%y%m%d_%H%M%S')
         with io.open('results_cert_{0:s}_{1:s}.csv'.format(self.filename, now_str), 'w') as output_o:
-            output_o.write('#host:port,cn,fingerprint,selfsigned,expire,days,issuer\n')
+            csvwriter = csv.writer(output_o)
+
+            csvwriter.writerow(['#host:port', 'cn', 'fingerprint', 'selfsigned', 'expire', 'days', 'issuer'])
 
 
             for entry in query:
@@ -442,7 +448,7 @@ class expired_certificate_scanner(object):
                 else:
                     selfsigned = ''
 
-                output_o.write('{0}:{1},{2},{3},{4},{5},{6},{7}\n'.format(
+                csvwriter.writerow([
                     entry.host,
                     entry.port,
                     entry.cn,
@@ -451,7 +457,7 @@ class expired_certificate_scanner(object):
                     entry.expire,
                     time_remaining.days,
                     entry.issuer,
-                ))
+                ])
 
 
             logger.warning('Report: %s', output_o.name)
@@ -466,7 +472,9 @@ class expired_certificate_scanner(object):
 
         now_str = now.strftime('%y%m%d_%H%M%S')
         with io.open('results_ssl_{0:s}_{1:s}.csv'.format(self.filename, now_str), 'w') as output_o:
-            output_o.write('#host:port,cn,tlsv1_3,tlsv1_2,tlsv1_1,tlsv1_0,sslv3_0,sslv2_0\n')
+            csvwriter = csv.writer(output_o)
+
+            csvwriter.writerow(['#host:port', 'cn', 'tlsv1_3', 'tlsv1_2', 'tlsv1_1', 'tlsv1_0', 'sslv3_0', 'sslv2_0'])
 
 
             for entry in query:
@@ -530,7 +538,7 @@ class expired_certificate_scanner(object):
                     sslv2_0 = 'x'
 
 
-                output_o.write('{0}:{1},{2},{3},{4},{5},{6},{7},{8}\n'.format(
+                csvwriter.writerow([
                     entry.host,
                     entry.port,
                     entry.cn,
@@ -540,7 +548,7 @@ class expired_certificate_scanner(object):
                     tlsv1_0,
                     sslv3_0,
                     sslv2_0,
-                ))
+                ])
 
 
             logger.warning('Report: %s', output_o.name)
