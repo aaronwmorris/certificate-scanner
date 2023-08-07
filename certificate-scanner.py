@@ -414,8 +414,7 @@ class certificate_scanner(object):
                 time_remaining = entry.expire - now
 
                 csvwriter.writerow([
-                    entry.host,
-                    entry.port,
+                    '{0:s}:{1:d}'.format(entry.host, entry.port),
                     entry.cn,
                     entry.expire,
                     time_remaining.days,
@@ -449,8 +448,7 @@ class certificate_scanner(object):
                     selfsigned = ''
 
                 csvwriter.writerow([
-                    entry.host,
-                    entry.port,
+                    '{0:s}:{1:d}'.format(entry.host, entry.port),
                     entry.cn,
                     entry.fingerprint,
                     selfsigned,
@@ -464,6 +462,10 @@ class certificate_scanner(object):
 
 
     def ssl_report(self, days):
+        self.tls_report(days)
+
+
+    def tls_report(self, days):
         now = datetime.datetime.now()
 
         query = self.session.query(ScanEntry)\
@@ -471,7 +473,7 @@ class certificate_scanner(object):
 
 
         now_str = now.strftime('%y%m%d_%H%M%S')
-        with io.open('results_ssl_{0:s}_{1:s}.csv'.format(self.filename, now_str), 'w') as output_o:
+        with io.open('results_tls_{0:s}_{1:s}.csv'.format(self.filename, now_str), 'w') as output_o:
             csvwriter = csv.writer(output_o)
 
             csvwriter.writerow(['#host:port', 'cn', 'tlsv1_3', 'tlsv1_2', 'tlsv1_1', 'tlsv1_0', 'sslv3_0', 'sslv2_0'])
@@ -539,8 +541,7 @@ class certificate_scanner(object):
 
 
                 csvwriter.writerow([
-                    entry.host,
-                    entry.port,
+                    '{0:s}:{1:d}'.format(entry.host, entry.port),
                     entry.cn,
                     tlsv1_3,
                     tlsv1_2,
@@ -598,6 +599,7 @@ if __name__ == '__main__':
             'cert_report',
             'cert_fullreport',
             'ssl_report',
+            'tls_report',
         ],
     )
     parser.add_argument(
