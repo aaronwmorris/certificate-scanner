@@ -485,7 +485,7 @@ class certificate_scanner(object):
                 elif entry.tlsv1_3 == 'no_scan':
                     tlsv1_3 = 'no_scan'
                 elif entry.tlsv1_3 == 'disabled':
-                    tlsv1_3 = 'disabled'
+                    tlsv1_3 = ''
                 else:
                     tlsv1_3 = 'x'
 
