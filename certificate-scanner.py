@@ -538,7 +538,7 @@ class certificate_scanner(object):
                 sslv2_0 = 'x'
 
 
-            ws1.append([
+            ws2.append([
                 '{0:s}:{1:d}'.format(entry.host, entry.port),
                 entry.cn,
                 tlsv1_3,
