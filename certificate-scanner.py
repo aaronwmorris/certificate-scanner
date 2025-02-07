@@ -450,7 +450,7 @@ class certificate_scanner(object):
         ws1.title = 'Cert Report'
 
 
-        ws1.append(['#host:port', 'cn', 'fingerprint', 'selfsigned', 'expire', 'days', 'issuer'])
+        ws1.append(['host:port', 'cn', 'fingerprint', 'selfsigned', 'expire', 'days', 'issuer'])
 
         for entry in cert_query:
             time_remaining = entry.expire - now
