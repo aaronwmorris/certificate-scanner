@@ -55,8 +55,13 @@ WARN_DAYS = 90
 WORKER_POOL = 15
 
 
-logging.basicConfig(level=logging.INFO)
-logger = logging
+logger = logging.getLogger(__name__)
+logger.setLevel(level=logging.INFO)
+
+LOG_FORMATTER_STREAM = logging.Formatter('%(asctime)s [%(levelname)s] %(processName)s %(funcName)s() [%(lineno)d]: %(message)s')
+LOG_HANDLER_STREAM = logging.StreamHandler()
+LOG_HANDLER_STREAM.setFormatter(LOG_FORMATTER_STREAM)
+logger.addHandler(LOG_HANDLER_STREAM)
 
 
 logging.getLogger('sqlalchemy').setLevel(logging.WARN)
@@ -229,8 +234,7 @@ class certificate_scanner(object):
             logger.info('Updating scan entry: %d', scan_entry.id)
 
             if scan_result.scan_status == ServerScanStatusEnum.ERROR_NO_CONNECTIVITY:
-                logger.error('Error at %s:%d', scan_entry.host, scan_entry.port)
-                #logger.error('Error: %d', scan_result)
+                logger.error('Error at %s:%d: %s', scan_entry.host, scan_entry.port, scan_result.connectivity_error_trace)
 
                 scan_entry.error = 'no connectivity'
                 scan_entry.state = ScanState.NOTOPEN
