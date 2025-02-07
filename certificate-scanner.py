@@ -48,7 +48,6 @@ from sqlalchemy.sql.expression import false as sa_false
 DEFAULT_PORT_LIST = [
     '443',
     '8443',
-    '9443',
 ]
 WARN_DAYS = 90
 
@@ -188,7 +187,8 @@ class certificate_scanner(object):
         scan_list = list()
         for entry in open_query:
             #logger.info('Creating location')
-            server_location = ServerNetworkLocation(entry.host, ip_address=entry.host, port=entry.port)
+            server_location = ServerNetworkLocation(entry.host, port=entry.port)
+            #server_location = ServerNetworkLocation(entry.host, ip_address=entry.host, port=entry.port)  # ip_address no longer needed as of sslyze 6.0 ?
             network_configuration = ServerNetworkConfiguration(entry.host, network_timeout=2)
 
             scan_req = ServerScanRequest(
@@ -234,7 +234,7 @@ class certificate_scanner(object):
             logger.info('Updating scan entry: %d', scan_entry.id)
 
             if scan_result.scan_status == ServerScanStatusEnum.ERROR_NO_CONNECTIVITY:
-                logger.error('Error at %s:%d: %s', scan_entry.host, scan_entry.port, scan_result.connectivity_error_trace)
+                logger.warning('Error at %s:%d: %s', scan_entry.host, scan_entry.port, scan_result.connectivity_error_trace)
 
                 scan_entry.error = 'no connectivity'
                 scan_entry.state = ScanState.NOTOPEN
