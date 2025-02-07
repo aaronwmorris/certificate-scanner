@@ -4,8 +4,6 @@
 
 
 import sys
-import io
-import csv
 import logging
 import re
 import time
@@ -14,6 +12,8 @@ import ipaddress
 import argparse
 import enum
 from pprint import pformat  # noqa: F401
+
+from openpyxl import Workbook
 
 from sslyze import Scanner
 from sslyze import ServerNetworkLocation
@@ -404,156 +404,156 @@ class certificate_scanner(object):
             .order_by(ScanEntry.expire)
 
 
-        now_str = now.strftime('%y%m%d_%H%M%S')
-        with io.open('results_cert_{0:s}_{1:s}.csv'.format(self.filename, now_str), 'w') as output_o:
-            csvwriter = csv.writer(output_o)
-
-            csvwriter.writerow(['#host:port', 'cn', 'expire', 'days', 'issuer'])
-
-            for entry in query:
-                time_remaining = entry.expire - now
-
-                csvwriter.writerow([
-                    '{0:s}:{1:d}'.format(entry.host, entry.port),
-                    entry.cn,
-                    entry.expire,
-                    time_remaining.days,
-                    entry.issuer,
-                ])
+        now_str = now.strftime('%Y%m%d_%H%M%S')
 
 
-            logger.warning('Report: %s', output_o.name)
+        wb = Workbook(write_only=True)
+        ws1 = wb.create_sheet()
+        ws1.title = 'Cert Report'
+
+        ws1.append(['host:port', 'cn', 'expire', 'days', 'issuer'])
+
+        for entry in query:
+            time_remaining = entry.expire - now
+
+            ws1.append([
+                '{0:s}:{1:d}'.format(entry.host, entry.port),
+                entry.cn,
+                entry.expire,
+                time_remaining.days,
+                entry.issuer,
+            ])
+
+
+        wb_filename = 'results_cert_{0:s}_{1:s}.xlsx'.format(self.filename, now_str)
+        wb.save(wb_filename)
+        logger.warning('Report: %s', wb_filename)
+
 
 
     def cert_fullreport(self, days):
         now = datetime.datetime.now()
 
-        query = self.session.query(ScanEntry)\
+        cert_query = self.session.query(ScanEntry)\
             .filter(ScanEntry.state == ScanState.COMPLETE)\
             .order_by(ScanEntry.expire)
 
 
-        now_str = now.strftime('%y%m%d_%H%M%S')
-        with io.open('results_cert_{0:s}_{1:s}.csv'.format(self.filename, now_str), 'w') as output_o:
-            csvwriter = csv.writer(output_o)
-
-            csvwriter.writerow(['#host:port', 'cn', 'fingerprint', 'selfsigned', 'expire', 'days', 'issuer'])
-
-
-            for entry in query:
-                time_remaining = entry.expire - now
-                if entry.selfsigned:
-                    selfsigned = 'True'
-                else:
-                    selfsigned = ''
-
-                csvwriter.writerow([
-                    '{0:s}:{1:d}'.format(entry.host, entry.port),
-                    entry.cn,
-                    entry.fingerprint,
-                    selfsigned,
-                    entry.expire,
-                    time_remaining.days,
-                    entry.issuer,
-                ])
-
-
-            logger.warning('Report: %s', output_o.name)
-
-
-    def ssl_report(self, days):
-        self.tls_report(days)
-
-
-    def tls_report(self, days):
-        now = datetime.datetime.now()
-
-        query = self.session.query(ScanEntry)\
+        tls_query = self.session.query(ScanEntry)\
             .filter(ScanEntry.state == ScanState.COMPLETE)
 
 
-        now_str = now.strftime('%y%m%d_%H%M%S')
-        with io.open('results_tls_{0:s}_{1:s}.csv'.format(self.filename, now_str), 'w') as output_o:
-            csvwriter = csv.writer(output_o)
+        now_str = now.strftime('%Y%m%d_%H%M%S')
 
-            csvwriter.writerow(['#host:port', 'cn', 'tlsv1_3', 'tlsv1_2', 'tlsv1_1', 'tlsv1_0', 'sslv3_0', 'sslv2_0'])
-
-
-            for entry in query:
-                if not entry.tlsv1_3:
-                    tlsv1_3 = 'no_data'
-                elif entry.tlsv1_3 == 'no_scan':
-                    tlsv1_3 = 'no_scan'
-                elif entry.tlsv1_3 == 'disabled':
-                    tlsv1_3 = ''
-                else:
-                    tlsv1_3 = 'x'
+        wb = Workbook(write_only=True)
+        ws1 = wb.create_sheet()
+        ws1.title = 'Cert Report'
 
 
-                if not entry.tlsv1_2:
-                    tlsv1_2 = 'no_data'
-                elif entry.tlsv1_2 == 'no_scan':
-                    tlsv1_2 = 'no_scan'
-                elif entry.tlsv1_2 == 'disabled':
-                    tlsv1_2 = ''
-                else:
-                    tlsv1_2 = 'x'
+        ws1.append(['#host:port', 'cn', 'fingerprint', 'selfsigned', 'expire', 'days', 'issuer'])
+
+        for entry in cert_query:
+            time_remaining = entry.expire - now
+            if entry.selfsigned:
+                selfsigned = 'True'
+            else:
+                selfsigned = None
 
 
-                if not entry.tlsv1_1:
-                    tlsv1_1 = 'no_data'
-                elif entry.tlsv1_1 == 'no_scan':
-                    tlsv1_1 = 'no_scan'
-                elif entry.tlsv1_1 == 'disabled':
-                    tlsv1_1 = ''
-                else:
-                    tlsv1_1 = 'x'
+            ws1.append([
+                '{0:s}:{1:d}'.format(entry.host, entry.port),
+                entry.cn,
+                entry.fingerprint,
+                selfsigned,
+                entry.expire,
+                time_remaining.days,
+                entry.issuer,
+            ])
 
 
-                if not entry.tlsv1_0:
-                    tlsv1_0 = 'no_data'
-                elif entry.tlsv1_0 == 'no_scan':
-                    tlsv1_0 = 'no_scan'
-                elif entry.tlsv1_0 == 'disabled':
-                    tlsv1_0 = ''
-                else:
-                    tlsv1_0 = 'x'
+        ws2 = wb.create_sheet()
+        ws2.title = 'TLS-SSL Report'
 
 
-                if not entry.sslv3_0:
-                    sslv3_0 = 'no_data'
-                elif entry.sslv3_0 == 'no_scan':
-                    sslv3_0 = 'no_scan'
-                elif entry.sslv3_0 == 'disabled':
-                    sslv3_0 = ''
-                else:
-                    sslv3_0 = 'x'
+        ws2.append(['host:port', 'cn', 'tlsv1_3', 'tlsv1_2', 'tlsv1_1', 'tlsv1_0', 'sslv3_0', 'sslv2_0'])
+
+        for entry in tls_query:
+            if not entry.tlsv1_3:
+                tlsv1_3 = 'no_data'
+            elif entry.tlsv1_3 == 'no_scan':
+                tlsv1_3 = 'no_scan'
+            elif entry.tlsv1_3 == 'disabled':
+                tlsv1_3 = ''
+            else:
+                tlsv1_3 = 'x'
 
 
-                if not entry.sslv2_0:
-                    sslv2_0 = 'no_data'
-                elif entry.sslv2_0 == 'no_scan':
-                    sslv2_0 = 'no_scan'
-                elif entry.sslv2_0 == 'disabled':
-                    sslv2_0 = ''
-                else:
-                    sslv2_0 = 'x'
+            if not entry.tlsv1_2:
+                tlsv1_2 = 'no_data'
+            elif entry.tlsv1_2 == 'no_scan':
+                tlsv1_2 = 'no_scan'
+            elif entry.tlsv1_2 == 'disabled':
+                tlsv1_2 = ''
+            else:
+                tlsv1_2 = 'x'
 
 
-                csvwriter.writerow([
-                    '{0:s}:{1:d}'.format(entry.host, entry.port),
-                    entry.cn,
-                    tlsv1_3,
-                    tlsv1_2,
-                    tlsv1_1,
-                    tlsv1_0,
-                    sslv3_0,
-                    sslv2_0,
-                ])
+            if not entry.tlsv1_1:
+                tlsv1_1 = 'no_data'
+            elif entry.tlsv1_1 == 'no_scan':
+                tlsv1_1 = 'no_scan'
+            elif entry.tlsv1_1 == 'disabled':
+                tlsv1_1 = ''
+            else:
+                tlsv1_1 = 'x'
 
 
-            logger.warning('Report: %s', output_o.name)
+            if not entry.tlsv1_0:
+                tlsv1_0 = 'no_data'
+            elif entry.tlsv1_0 == 'no_scan':
+                tlsv1_0 = 'no_scan'
+            elif entry.tlsv1_0 == 'disabled':
+                tlsv1_0 = ''
+            else:
+                tlsv1_0 = 'x'
 
+
+            if not entry.sslv3_0:
+                sslv3_0 = 'no_data'
+            elif entry.sslv3_0 == 'no_scan':
+                sslv3_0 = 'no_scan'
+            elif entry.sslv3_0 == 'disabled':
+                sslv3_0 = ''
+            else:
+                sslv3_0 = 'x'
+
+
+            if not entry.sslv2_0:
+                sslv2_0 = 'no_data'
+            elif entry.sslv2_0 == 'no_scan':
+                sslv2_0 = 'no_scan'
+            elif entry.sslv2_0 == 'disabled':
+                sslv2_0 = ''
+            else:
+                sslv2_0 = 'x'
+
+
+            ws1.append([
+                '{0:s}:{1:d}'.format(entry.host, entry.port),
+                entry.cn,
+                tlsv1_3,
+                tlsv1_2,
+                tlsv1_1,
+                tlsv1_0,
+                sslv3_0,
+                sslv2_0,
+            ])
+
+
+
+        wb_filename = 'results_cert_{0:s}_{1:s}.xlsx'.format(self.filename, now_str)
+        wb.save(wb_filename)
+        logger.warning('Report: %s', wb_filename)
 
 
 class ScanState(enum.Enum):
@@ -598,8 +598,6 @@ if __name__ == '__main__':
             'scan',
             'cert_report',
             'cert_fullreport',
-            'ssl_report',
-            'tls_report',
         ],
     )
     parser.add_argument(

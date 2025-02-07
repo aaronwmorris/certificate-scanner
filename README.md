@@ -40,8 +40,6 @@ Generating reports
     
     ./certificate_scanner.py -f ip_list.txt cert_fullreport
     
-    ./certificate_scanner.py -f ip_list.txt ssl_report
-
 
 Restarting
 ----------

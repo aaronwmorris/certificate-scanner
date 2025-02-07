@@ -2,9 +2,11 @@
 __pycache__/
 *.py[cod]
 
+ip_list.txt
 
 # reports
 results*.csv
+results*.xlsx
 
 
 # SQLite dbs
